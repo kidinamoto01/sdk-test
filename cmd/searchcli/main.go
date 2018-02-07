@@ -1,39 +1,15 @@
 package main
 
 import (
-	"os"
-	"github.com/spf13/cobra"
-	"github.com/tendermint/tmlibs/cli"
 
-	"github.com/kidinamoto01/test/version"
-	)
-
-// entry point for this binary
-var (
-	ExplorerCli = &cobra.Command{
-		Use:   "explorercli",
-		Run: func(cmd *cobra.Command, args []string) {
-			cmd.Help()
-		},
-	}
+	"github.com/kidinamoto01/sdk-test/app"
+	"fmt"
 )
 
+// Entry point of the Go app
 
 func main() {
-	// disable sorting
-	cobra.EnableCommandSorting = false
-
-
-
-	ExplorerCli.AddCommand(
-		//commands.InitCmd,
-		//restServerCmd,
-		//syncCmd,
-
-		version.VersionCmd,
-	)
-
-	// prepare and add flags
-	executor := cli.PrepareMainCmd(ExplorerCli, "EX", os.ExpandEnv("$HOME/.search-cli"))
-	executor.Execute()
+	app := app.NewSearchApp()
+	fmt.Println("Search app started. Running forever on :46658")
+	app.RunForever()
 }
