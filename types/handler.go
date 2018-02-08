@@ -14,6 +14,7 @@ import (
 
 // Routes the message (request) to a proper handler
 func RegisterRoutes(r baseapp.Router, accts sdk.AccountMapper) {
+	r.AddRoute(ProposeVoteType, DepositMsgHandler(accts))
 	r.AddRoute(DepositType, DepositMsgHandler(accts))
 	r.AddRoute(SettlementType, SettleMsgHandler(accts))
 	r.AddRoute(WithdrawType, WithdrawMsgHandler(accts))
@@ -62,6 +63,48 @@ func (d depositMsgHandler) Do(ctx sdk.Context, msg sdk.Msg) sdk.Result {
 
 	return sdk.Result{}
 }
+
+/*
+
+Propose functionality.
+
+*/
+func ProposeMsgHandler(accts sdk.AccountMapper) sdk.Handler {
+	return proposeMsgHandler{accts}.Do
+}
+
+type proposeMsgHandler struct {
+	accts sdk.AccountMapper
+}
+
+// Deposit logic
+func (d depositMsgHandler) Do(ctx sdk.Context, msg sdk.Msg) sdk.Result {
+	// TODO: ensure auth actually checks the sigs
+
+	// ensure proper message
+	dm, ok := msg.(DepositMsg)
+	if !ok {
+		return ErrWrongMsgFormat("expected DepositMsg").Result()
+	}
+
+	// ensure proper types
+	sender, err := getAccountWithType(ctx, d.accts, dm.Sender, IsCustodian)
+	if err != nil {
+		return err.Result()
+	}
+	rcpt, err := getAccountWithType(ctx, d.accts, dm.Recipient, IsMember)
+	if err != nil {
+		return err.Result()
+	}
+
+	err = moveMoney(d.accts, ctx, sender, rcpt, dm.Amount, false, true)
+	if err != nil {
+		return err.Result()
+	}
+
+	return sdk.Result{}
+}
+
 
 /*
 Settlement funcionality.

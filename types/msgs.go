@@ -17,7 +17,7 @@ const (
 	WithdrawType      = "withdraw"
 	CreateAccountType = "createAccount"
 	ProposeVoteType = "proposevote"
-	Vote="vote"
+	VoteType="vote"
 	GetResult="getresult"
 )
 
@@ -136,6 +136,67 @@ func (d ProposeMsg) GetSigners() []crypto.Address {
 	return []crypto.Address{d.Sender}
 }
 
+
+
+// DepositMsg defines the properties of an asset transfer
+type VoteMsg struct {
+	Sender    crypto.Address
+	Proposer    crypto.Address
+	Index     int
+	Choose    int
+}
+
+// ensure DepositMsg implements the sdk.Msg interface
+var _ sdk.Msg = (*VoteMsg)(nil)
+
+// ValidateBasic is called by the SDK automatically.
+func (d VoteMsg) ValidateBasic() sdk.Error {
+	if d.Index <= 0 {
+		return ErrInvalidParameter("negative index number")
+	}
+	if d.Choose <= 0 {
+		return ErrInvalidParameter("negative index number")
+	}
+	if err := validateAddress(d.Sender); err != nil {
+		return err
+	}
+	if err := validateAddress(d.Proposer); err != nil {
+		return err
+	}
+
+	if bytes.Equal(d.Sender, d.Proposer) {
+		return ErrInvalidAddress("sender and proposer have the same address")
+	}
+
+	return nil
+}
+
+// Type returns the message type.
+// Must be alphanumeric or empty.
+func (d VoteMsg) Type() string {
+	return VoteType
+}
+
+// Get some property of the Msg.
+func (d VoteMsg) Get(key interface{}) (value interface{}) {
+	return nil
+}
+
+// GetSignBytes returns the canonical byte representation of the Msg.
+func (d VoteMsg) GetSignBytes() []byte {
+	bz, err := cdc.MarshalBinary(d)
+	if err != nil {
+		panic(err)
+	}
+	return bz
+}
+
+// GetSigners returns the addrs of signers that must sign.
+// CONTRACT: All signatures must be present to be valid.
+// CONTRACT: Returns addrs in some deterministic order.
+func (d VoteMsg) GetSigners() []crypto.Address {
+	return []crypto.Address{d.Sender}
+}
 
 // SettleMsg defines the properties of a settle transaction.
 type SettleMsg struct {

@@ -34,12 +34,12 @@ func TestProposerMsg_ValidateBasic(t *testing.T) {
 		},
 		{
 			"zero cadidate",
-			fields{Candidate: 0},
+			fields{Sender:addr,Index: 1,Candidate: 0},
 			CodeInvalidParameter,
 		},
 		{
 			"no amount",
-			fields{Index: 1,Candidate: 2,Name:""},
+			fields{Sender:addr,Index: 1,Candidate: 2,Name:""},
 			CodeInvalidParameter,
 		},
 	}
@@ -50,6 +50,58 @@ func TestProposerMsg_ValidateBasic(t *testing.T) {
 				Index: tt.fields.Index,
 				Candidate:tt.fields.Candidate,
 				Name:tt.fields.Name,
+			}
+			got := d.ValidateBasic()
+			if got == nil {
+				assert.True(t, tt.errorCode.IsOK())
+			} else {
+				assert.Equal(t, tt.errorCode, got.ABCICode())
+			}
+		})
+	}
+}
+
+func TestVoteMsg_ValidateBasic(t *testing.T) {
+	type fields struct {
+		Sender    crypto.Address
+		Proposer    crypto.Address
+		Index    int //投票序号
+		Choose int //候选数量
+	}
+
+	//short := crypto.Address("foo")
+	//long := crypto.Address("hefkuhwqekufghwqekufgwqekufgkwuqgfkugfkuwgek")
+	addr := crypto.GenPrivKeyEd25519().PubKey().Address()
+	addr2 := crypto.GenPrivKeyEd25519().PubKey().Address()
+
+	tests := []struct {
+		name      string
+		fields    fields
+		errorCode sdk.CodeType
+	}{
+		{
+			"empty proposer",
+			fields{Sender:addr,Index: 1},
+			CodeInvalidParameter,
+		},
+		{
+			"zero cadidate",
+			fields{Sender:addr,Proposer:addr2,Index: 0},
+			CodeInvalidParameter,
+		},
+		{
+			"no amount",
+			fields{Sender:addr,Proposer:addr2,Index: 1,Choose:0},
+			CodeInvalidParameter,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := VoteMsg{
+				Sender:    tt.fields.Sender,
+				Proposer:tt.fields.Proposer,
+				Index: tt.fields.Index,
+				Choose:tt.fields.Choose,
 			}
 			got := d.ValidateBasic()
 			if got == nil {

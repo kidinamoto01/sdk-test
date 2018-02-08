@@ -23,6 +23,8 @@ func ErrInvalidAmount(typ string) sdk.Error {
 	return sdk.NewError(CodeInvalidAmount, fmt.Sprintf("invalid amount: %s", typ))
 }
 
+
+// 判断参数是否合理
 func ErrInvalidParameter(typ string) sdk.Error {
 	return sdk.NewError(CodeInvalidParameter, fmt.Sprintf("invalid amount: %s", typ))
 }

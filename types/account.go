@@ -125,7 +125,7 @@ func CanCreate(creator, acct *AppAccount) error {
 // AccountMapper creates an account mapper given a storekey
 func AccountMapper(capKey sdk.StoreKey) sdk.AccountMapper {
 	var accountMapper = auth.NewAccountMapper(
-		capKey,        // target store
+		capKey,       // target store
 		&AppAccount{}, // prototype
 	)
 
