@@ -6,6 +6,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	crypto "github.com/tendermint/go-crypto"
+	"strconv"
 )
 
 // TODO: Admin cannot do ops other than create account msg
@@ -13,8 +14,8 @@ import (
 //Business logic is executed here
 
 // Routes the message (request) to a proper handler
-func RegisterRoutes(r baseapp.Router, accts sdk.AccountMapper) {
-	r.AddRoute(ProposeVoteType, DepositMsgHandler(accts))
+func RegisterRoutes(r baseapp.Router, accts sdk.AccountMapper,storeKey sdk.StoreKey) {
+	r.AddRoute(ProposeVoteType, ProposeMsgHandler(accts,storeKey))
 	r.AddRoute(DepositType, DepositMsgHandler(accts))
 	r.AddRoute(SettlementType, SettleMsgHandler(accts))
 	r.AddRoute(WithdrawType, WithdrawMsgHandler(accts))
@@ -69,38 +70,34 @@ func (d depositMsgHandler) Do(ctx sdk.Context, msg sdk.Msg) sdk.Result {
 Propose functionality.
 
 */
-func ProposeMsgHandler(accts sdk.AccountMapper) sdk.Handler {
-	return proposeMsgHandler{accts}.Do
+func ProposeMsgHandler(accts sdk.AccountMapper,storeKey sdk.StoreKey) sdk.Handler {
+	return proposeMsgHandler{accts,storeKey}.Do
 }
 
 type proposeMsgHandler struct {
 	accts sdk.AccountMapper
+	storeKey sdk.StoreKey
 }
 
-// Deposit logic
-func (d depositMsgHandler) Do(ctx sdk.Context, msg sdk.Msg) sdk.Result {
-	// TODO: ensure auth actually checks the sigs
+// propose logic
+func (d proposeMsgHandler) Do(ctx sdk.Context, msg sdk.Msg) sdk.Result {
 
 	// ensure proper message
-	dm, ok := msg.(DepositMsg)
+	dm, ok := msg.(ProposeMsg)
 	if !ok {
 		return ErrWrongMsgFormat("expected DepositMsg").Result()
 	}
 
 	// ensure proper types
-	sender, err := getAccountWithType(ctx, d.accts, dm.Sender, IsCustodian)
+	sender, err := getAccount(ctx, d.accts, dm.Sender)
 	if err != nil {
 		return err.Result()
 	}
-	rcpt, err := getAccountWithType(ctx, d.accts, dm.Recipient, IsMember)
-	if err != nil {
-		return err.Result()
-	}
+	key := sender.Address.Bytes()
+	value := []byte(strconv.Itoa(dm.Index))
+	store := ctx.KVStore(d.storeKey)
+	store.Set(key, value)
 
-	err = moveMoney(d.accts, ctx, sender, rcpt, dm.Amount, false, true)
-	if err != nil {
-		return err.Result()
-	}
 
 	return sdk.Result{}
 }
@@ -277,6 +274,20 @@ func getAccountWithType(ctx sdk.Context, accts sdk.AccountMapper, addr crypto.Ad
 	if !typeCheck(account) {
 		return nil, ErrWrongSigner(account.Type)
 	}
+
+	return account, nil
+}
+
+
+// Returns the account
+func getAccount(ctx sdk.Context, accts sdk.AccountMapper, addr crypto.Address) (
+	*AppAccount, sdk.Error) {
+
+	rawAccount := accts.GetAccount(ctx, addr)
+	if rawAccount == nil {
+		return nil, ErrInvalidAccount("account does not exist")
+	}
+	account := rawAccount.(*AppAccount)
 
 	return account, nil
 }

@@ -4,7 +4,7 @@ import (
 	"github.com/tendermint/abci/server"
 	cmn "github.com/tendermint/tmlibs/common"
 
-	"github.com/cosmos/cosmos-sdk/baseapp"
+	 "github.com/cosmos/cosmos-sdk/baseapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 
@@ -17,6 +17,8 @@ const AppName = "Ballot"
 type SearchApp struct {
 	*baseapp.BaseApp
 	accts sdk.AccountMapper
+	capKeyMainStore *sdk.KVStoreKey
+	router     baseapp.Router
 }
 
 func NewSearchApp() *SearchApp {
@@ -35,16 +37,16 @@ func NewSearchApp() *SearchApp {
 
 	// register routes on new application
 	accts := types.AccountMapper(mainKey)
-	types.RegisterRoutes(bApp.Router(), accts)
+	types.RegisterRoutes(bApp.Router(), accts,mainKey)
 
 	// set up ante and tx parsing
 	setAnteHandler(bApp, accts)
 	initBaseAppTxDecoder(bApp)
 
-	return &SearchApp{
-		BaseApp: bApp,
-		accts:   accts,
-	}
+	var app = &SearchApp{}
+	app.initStores()   // ./init_stores.go
+
+	return app
 }
 
 // RunForever starts the abci server
