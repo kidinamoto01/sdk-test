@@ -7,15 +7,20 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	crypto "github.com/tendermint/go-crypto"
 	"strconv"
+	"github.com/tendermint/abci/types"
 )
 
 // TODO: Admin cannot do ops other than create account msg
 
+func RegisterBallotRoutes(r baseapp.Router, accts sdk.AccountMapper,storeKey sdk.StoreKey){
+	r.AddRoute(ProposeVoteType, ProposeMsgHandler(accts,storeKey))
+	RegisterRoutes(r,accts)
+}
+
 //Business logic is executed here
 
 // Routes the message (request) to a proper handler
-func RegisterRoutes(r baseapp.Router, accts sdk.AccountMapper,storeKey sdk.StoreKey) {
-	r.AddRoute(ProposeVoteType, ProposeMsgHandler(accts,storeKey))
+func RegisterRoutes(r baseapp.Router, accts sdk.AccountMapper) {
 	r.AddRoute(DepositType, DepositMsgHandler(accts))
 	r.AddRoute(SettlementType, SettleMsgHandler(accts))
 	r.AddRoute(WithdrawType, WithdrawMsgHandler(accts))
@@ -90,19 +95,25 @@ func (d proposeMsgHandler) Do(ctx sdk.Context, msg sdk.Msg) sdk.Result {
 
 	// ensure proper types
 	sender, err := getAccount(ctx, d.accts, dm.Sender)
+
 	if err != nil {
 		return err.Result()
 	}
 	key := sender.Address.Bytes()
 	value := []byte(strconv.Itoa(dm.Index))
-	store := ctx.KVStore(d.storeKey)
-	store.Set(key, value)
 
+	fmt.Println("key: ",key," value: ",value)
 
-	return sdk.Result{}
+	//store := ctx.KVStore(d.storeKey)
+	//store.Set(key, value)
+
+	return sdk.Result{Code:sdk.CodeOK}
 }
 
-
+//func (*sapp SearchApp)insertValue(ctx sdk.Context){
+//
+//
+//}
 /*
 Settlement funcionality.
 

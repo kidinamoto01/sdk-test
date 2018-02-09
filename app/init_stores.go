@@ -17,7 +17,7 @@ func (app *SearchApp) initStores() {
 func (app *SearchApp) mountStores() {
 
 	// Create MultiStore mounts.
-	app.BaseApp.MountStore(app.capKeyMainStore, sdk.StoreTypeIAVL)
+	app.BaseApp.MountStore(app.capKeyMainStore, sdk.StoreTypeMulti)
 }
 
 // Initialize the AccountMapper.

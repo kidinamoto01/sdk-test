@@ -9,6 +9,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/auth"
 
 	"github.com/kidinamoto01/sdk-test/types"
+	"fmt"
+	"os"
 )
 
 const AppName = "Ballot"
@@ -25,26 +27,31 @@ func NewSearchApp() *SearchApp {
 	// var app = &SearchApp{}
 
 	// make multistore with various keys
-	mainKey := sdk.NewKVStoreKey("ballot")
-	// ibcKey = sdk.NewKVStoreKey("ibc")
-
-	bApp := baseapp.NewBaseApp(AppName)
-	mountMultiStore(bApp, mainKey)
-	err := bApp.LoadLatestVersion(mainKey)
-	if err != nil {
-		panic(err)
-	}
-
-	// register routes on new application
-	accts := types.AccountMapper(mainKey)
-	types.RegisterRoutes(bApp.Router(), accts,mainKey)
-
-	// set up ante and tx parsing
-	setAnteHandler(bApp, accts)
-	initBaseAppTxDecoder(bApp)
+	//mainKey := sdk.NewKVStoreKey("ballot")
+	//// ibcKey = sdk.NewKVStoreKey("ibc")
+	//
+	//bApp := baseapp.NewBaseApp(AppName)
+	//mountMultiStore(bApp, mainKey)
+	//err := bApp.LoadLatestVersion(mainKey)
+	//if err != nil {
+	//	panic(err)
+	//}
+	//
+	//// register routes on new application
+	//accts := types.AccountMapper(mainKey)
+	//types.RegisterRoutes(bApp.Router(), accts,mainKey)
+	//
+	//// set up ante and tx parsing
+	//setAnteHandler(bApp, accts)
+	//initBaseAppTxDecoder(bApp)
 
 	var app = &SearchApp{}
+	app.initCapKeys()  // ./init_capkeys.go
+	app.initBaseApp()  // ./init_baseapp.go
 	app.initStores()   // ./init_stores.go
+	app.initHandlers() // ./init_handlers.go
+
+	app.loadStores()   // ./init_stores.go
 
 	return app
 }
@@ -96,4 +103,13 @@ func initBaseAppTxDecoder(bApp *baseapp.BaseApp) {
 		}
 		return tx, nil
 	})
+}
+
+
+// Load the stores.
+func (app *SearchApp) loadStores() {
+	if err := app.LoadLatestVersion(app.capKeyMainStore); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }

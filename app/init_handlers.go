@@ -2,8 +2,7 @@ package app
 
 import (
 	"github.com/cosmos/cosmos-sdk/x/auth"
-	"github.com/cosmos/cosmos-sdk/x/bank"
-	"github.com/cosmos/cosmos-sdk/x/sketchy"
+	"github.com/kidinamoto01/sdk-test/types"
 )
 
 // initCapKeys, initBaseApp, initStores, initHandlers.
@@ -25,6 +24,9 @@ func (app *SearchApp) initRouterHandlers() {
 
 	// All handlers must be added here.
 	// The order matters.
-	app.router.AddRoute("bank", bank.NewHandler(app.accts))
-	app.router.AddRoute("sketchy", sketchy.NewHandler())
+	//app.router.AddRoute("bank", bank.NewHandler(app.accts))
+	//app.router.AddRoute(ProposeVoteType, ProposeMsgHandler(accts,storeKey))
+	//app.router.AddRoute("sketchy", sketchy.NewHandler())
+	types.RegisterBallotRoutes(app.BaseApp.Router(), app.accts,app.capKeyMainStore)
+
 }

@@ -14,6 +14,7 @@ const (
 	EntityGeneralClearingMember    = "gcm"
 	EntityIndividualClearingMember = "icm"
 	EntityCustodian                = "custodian"
+	EntityProposer                 = "proposer"
 )
 
 var (
@@ -51,6 +52,12 @@ func GetCreator(a *AppAccount) crypto.Address {
 // SetCreator modifies account's creator.
 func (a *AppAccount) SetCreator(creator crypto.Address) {
 	a.Creator = creator
+}
+
+// IsEntityAdmin returns true if the account is admin
+// of its legal entity; false otherwise.
+func IsProposer(a *AppAccount) bool {
+	return a.Type == EntityProposer
 }
 
 // IsEntityAdmin returns true if the account is admin

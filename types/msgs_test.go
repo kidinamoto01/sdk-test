@@ -86,12 +86,12 @@ func TestVoteMsg_ValidateBasic(t *testing.T) {
 		},
 		{
 			"zero cadidate",
-			fields{Sender:addr,Proposer:addr2,Index: 0},
+			fields{Sender:addr,Proposer:addr,Index: 0},
 			CodeInvalidParameter,
 		},
 		{
 			"no amount",
-			fields{Sender:addr,Proposer:addr2,Index: 1,Choose:0},
+			fields{Sender:addr2,Proposer:addr2,Index: 1,Choose:0},
 			CodeInvalidParameter,
 		},
 	}
