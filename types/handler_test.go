@@ -113,12 +113,12 @@ func TestProposeMsgHandler(t *testing.T) {
 	router := baseapp.NewRouter()
 	RegisterRoutes(router, accts)
 
-	acctKey := sdk.NewKVStoreKey("main")
+	//acctKey := sdk.NewKVStoreKey("main")
 
 	addr := crypto.GenPrivKeyEd25519().PubKey().Address()
 
 	accts.NewAccountWithAddress(ctx,addr)
-	router.AddRoute(ProposeVoteType,ProposeMsgHandler(accts,acctKey))
+	router.AddRoute(ProposeVoteType,ProposeMsgHandler(accts))
 	//addr2 := crypto.GenPrivKeyEd25519().PubKey().Address()
 	type args struct {
 		ctx sdk.Context
@@ -155,7 +155,7 @@ func TestProposeMsgHandler(t *testing.T) {
 
 			//got := h(tt.args.ctx, tt.args.msg)
 			//fmt.Println(h,got)
-			handler := ProposeMsgHandler(accts,acctKey)
+			handler := ProposeMsgHandler(accts)
 			fmt.Println(handler)
 
 			got := handler(tt.args.ctx, tt.args.msg)

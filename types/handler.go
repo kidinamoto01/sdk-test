@@ -7,13 +7,13 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	crypto "github.com/tendermint/go-crypto"
 	"strconv"
-	"github.com/tendermint/abci/types"
+//	"github.com/tendermint/abci/types"
 )
 
 // TODO: Admin cannot do ops other than create account msg
 
 func RegisterBallotRoutes(r baseapp.Router, accts sdk.AccountMapper,storeKey sdk.StoreKey){
-	r.AddRoute(ProposeVoteType, ProposeMsgHandler(accts,storeKey))
+	r.AddRoute(ProposeVoteType, ProposeMsgHandler(accts))
 	RegisterRoutes(r,accts)
 }
 
@@ -75,13 +75,12 @@ func (d depositMsgHandler) Do(ctx sdk.Context, msg sdk.Msg) sdk.Result {
 Propose functionality.
 
 */
-func ProposeMsgHandler(accts sdk.AccountMapper,storeKey sdk.StoreKey) sdk.Handler {
-	return proposeMsgHandler{accts,storeKey}.Do
+func ProposeMsgHandler(accts sdk.AccountMapper) sdk.Handler {
+	return proposeMsgHandler{accts}.Do
 }
 
 type proposeMsgHandler struct {
 	accts sdk.AccountMapper
-	storeKey sdk.StoreKey
 }
 
 // propose logic
@@ -103,8 +102,8 @@ func (d proposeMsgHandler) Do(ctx sdk.Context, msg sdk.Msg) sdk.Result {
 	value := []byte(strconv.Itoa(dm.Index))
 
 	fmt.Println("key: ",key," value: ",value)
-
-	//store := ctx.KVStore(d.storeKey)
+	//skey := sdk.NewKVStoreKey("new")
+	//store := ctx.KVStore(skey)
 	//store.Set(key, value)
 
 	return sdk.Result{Code:sdk.CodeOK}
